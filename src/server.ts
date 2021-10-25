@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router, Request, Response, request } from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
@@ -28,6 +28,23 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
+
+  app.get("/filteredimage/", async (req: Request, res: Response) => {
+
+    let {image_url} = req.query;
+    
+    if (!image_url) {
+      res.status(422).send("image link missing!")
+    }else {
+        try {
+        const filter_image = await filterImageFromURL(image_url);
+        res.sendFile(filter_image);
+        res.on('finish', () => deleteLocalFiles([filter_image]));
+        } catch {
+          return res.status(500).send('Unable to process your request');
+        }
+      }
+    });
 
   //! END @TODO1
   
